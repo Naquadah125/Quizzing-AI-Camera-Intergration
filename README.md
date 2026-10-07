@@ -1,32 +1,12 @@
-# Quizzing AI Camera Integration - Online Examination Platform
+# React + Vite
 
-Online examination web platform featuring client-side AI face proctoring, server-authoritative timing, strict data isolation, and anti-cheat monitoring.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Project Structure
-- `backend/`: Node.js, Express, MongoDB Mongoose, Socket.io Realtime Server.
-- `frontend/`: React 19, Vite, React Router, Proctoring Exam Interface.
-- `ai-scanning/`: Standalone AI face scanning & anti-cheat module.
+Currently, two official plugins are available:
 
-## Quick Start (Run Both Together)
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-1. **Install root dependencies:**
-   ```bash
-   npm install
-   ```
+## Expanding the ESLint configuration
 
-2. **Configure Backend:**
-   - In `backend/.env`, configure your `MONGO_URI` (see `backend/.env.example`).
-   - Run seed script (optional):
-     ```bash
-     npm run seed
-     ```
-
-3. **Start both Backend (Port 5000) and Frontend (Port 5173):**
-   ```bash
-   npm run dev
-   ```
-
-## Demo Credentials (Password: `123456`)
-- **Admin:** `admin`
-- **Teacher:** `thayhung` (Class 12A1) | `colan` (Class 12A2)
-- **Student:** `hocsinhan` (Class 12A1) | `hocsinhcuong` (Class 12A2)
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
