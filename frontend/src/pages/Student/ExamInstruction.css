@@ -1,0 +1,202 @@
+.instruction-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+.instruction-card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.instruction-header {
+  padding: 30px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.exam-badge {
+  display: inline-block;
+  background-color: #e6f0ff;
+  color: #0066ff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.instruction-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.exam-meta {
+  color: #666;
+  font-size: 14px;
+}
+
+.instruction-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  padding: 30px;
+}
+
+.rules-section h3,
+.camera-check-section h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 20px;
+}
+
+.rules-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rules-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.rule-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Camera Preview */
+.camera-preview-box {
+  width: 100%;
+  height: 220px;
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.video-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-placeholder {
+  text-align: center;
+  color: #888;
+  padding: 20px;
+}
+
+.cam-icon {
+  font-size: 36px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.btn-enable-cam {
+  margin-top: 15px;
+  background-color: #0066ff;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-enable-cam:hover {
+  background-color: #0052cc;
+}
+
+.camera-error-msg {
+  margin-top: 15px;
+  background-color: #ffe6e6;
+  border: 1px solid #ffcccc;
+  color: #d32f2f;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.camera-success-msg {
+  margin-top: 15px;
+  background-color: #e6fffa;
+  border: 1px solid #b2f5ea;
+  color: #007a5e;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Footer Buttons */
+.instruction-footer {
+  padding: 20px 30px;
+  background-color: #f9fafb;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-cancel {
+  background: white;
+  border: 1px solid #d0d7de;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+}
+
+.btn-start-exam {
+  background-color: #00b894;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-start-exam:hover:not(:disabled) {
+  background-color: #00997b;
+  transform: translateY(-1px);
+}
+
+.btn-start-exam:disabled {
+  background-color: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.instruction-loading {
+  text-align: center;
+  padding: 80px 20px;
+  font-size: 16px;
+  color: #666;
+}

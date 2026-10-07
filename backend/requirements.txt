@@ -1,0 +1,37 @@
+# ==============================================================================
+# DANH SÁCH CÁC MODULE & THƯ VIỆN HỆ THỐNG (REQUIREMENTS)
+# Dự án: Hệ thống thi trắc nghiệm trực tuyến có AI giám sát & Data Isolation
+# Nền tảng: Node.js (Backend) & Client-side AI
+# ==============================================================================
+
+# --- 1. CORE BACKEND & WEB SERVER ---
+express==4.19.2              # Framework xây dựng RESTful API cho Server
+cors==2.8.5                  # Cho phép Client kết nối Cross-Origin an toàn
+dotenv==16.4.5               # Quản lý biến môi trường (.env: PORT, MONGO_URI, JWT_SECRET,...)
+helmet==7.1.0                # Bảo vệ HTTP headers chống các lỗ hổng web phổ biến
+morgan==1.10.0               # Logger ghi nhận các request HTTP đến Server
+
+# --- 2. DATABASE & ODM (MONGODB) ---
+mongoose==8.3.0              # ODM tương tác MongoDB, định nghĩa Schema và Data Isolation
+
+# --- 3. AUTHENTICATION & SECURITY (PHÂN QUYỀN VÀ MẬT KHẨU) ---
+jsonwebtoken==9.0.2          # Tạo và xác thực JWT token cho ADMIN, TEACHER, STUDENT
+bcryptjs==2.4.3              # Băm (hash) mật khẩu người dùng trước khi lưu vào Database
+
+# --- 4. IMPORT ĐỀ THI (CSV & EXCEL XLSX - MỤC 3 ĐẶC TẢ) ---
+multer==1.4.5-lts.1          # Middleware xử lý upload file đề thi từ giáo viên
+xlsx==0.18.5                 # Đọc và phân tích file Excel (.xlsx) chống lỗi vỡ cột dấu phẩy
+csv-parser==3.0.0            # Parse dữ liệu từ file .csv có cấu trúc
+
+# --- 5. REALTIME MONITORING & HEARTBEAT (MỤC 5 ĐẶC TẢ) ---
+socket.io==4.7.5             # Bắn tín hiệu Heartbeat, thông báo vi phạm gian lận tức thì cho Giáo viên
+
+# --- 6. DATE & TIME (SERVER-AUTHORITATIVE TIMING - MỤC 4 ĐẶC TẢ) ---
+dayjs==1.11.10               # Xử lý tính toán thời gian chính xác trên Server (Hard-close, Soft-close)
+
+# --- 7. CLIENT-SIDE AI & ANTI-CHEAT (THƯ VIỆN BỔ TRỢ PHÍA CLIENT) ---
+# face-api.js                # Quét khuôn mặt AI tại Client-side (chạy trên trình duyệt qua WebGL/Wasm)
+# @tensorflow/tfjs           # Core engine cho mô hình Face Detection tại Client
+
+# --- 8. DEVELOPMENT DEPENDENCIES (MÔI TRƯỜNG PHÁT TRIỂN) ---
+nodemon==3.1.0               # Tự động restart server khi thay đổi mã nguồn

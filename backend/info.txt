@@ -1,0 +1,61 @@
+# TÀI LIỆU YÊU CẦU DỰ ÁN: HỆ THỐNG THI TRẮC NGHIỆM TRỰC TUYẾN CÓ AI GIÁM SÁT GIAN LẬN
+
+## 1. Tổng quan Hệ thống
+Website thi thử trắc nghiệm sử dụng công nghệ AI quét khuôn mặt tại Client-side để giám sát gian lận. Hệ thống áp dụng mô hình Server-Authoritative (Server làm gốc) để xử lý thời gian và dữ liệu, kết hợp với các cơ chế lưu trữ cục bộ để phục hồi trạng thái khi rớt mạng.
+- **Định dạng bài thi:** Trắc nghiệm 4 đáp án, chỉ chọn 1 đáp án đúng (Single Choice).
+- **Cách ly dữ liệu (Data Isolation):** Quản lý thực thể qua các bảng/collection Users, Classes, Class_Teacher, và Class_Student (hoặc quan hệ Teacher/Student tương ứng). Giáo viên chỉ xem và thao tác được với dữ liệu của Học sinh/Lớp mà mình được phân quyền hoặc tự tạo.
+
+---
+
+## 2. Phân quyền và Vai trò (Roles)
+### Quản trị viên (ADMIN)
+- Quyền cao nhất trong hệ thống, không tham gia thi.
+- Tạo tài khoản Học sinh, Giáo viên.
+- Tạo Lớp học và gán Học sinh/Giáo viên vào Lớp học tương ứng (xử lý Data Isolation).
+
+### Giáo viên (TEACHER)
+- **Quản lý Tài khoản:** Tự tạo tài khoản Học sinh (hệ thống mặc định gán học sinh này vào lớp do giáo viên đó quản lý). Chỉnh sửa thông tin cá nhân của mình.
+- **Quản lý Bài thi:** Tạo bài thi ngay tại chỗ, hoặc tạo bằng file Import (CSV/XLSX). Cấu hình tùy chọn xáo trộn (shuffle) đáp án.
+- **Giao bài thi:** Được phép chỉ định bài thi cho khối/lớp cụ thể.
+- **Theo dõi & Đánh giá:** Xem điểm tổng quát, xem lịch sử điểm của học sinh thuộc lớp mình quản lý, nhận thông báo vi phạm/cảnh báo gian lận của học sinh để xử lý.
+
+### Học sinh (STUDENT)
+- **Tham gia thi:** Xem danh sách các bài thi đang mở hoặc sắp diễn ra của lớp mình. Thực hiện bài thi.
+- **Thông tin cá nhân:** Xem lịch sử điểm thi qua Navbar. Chỉnh sửa thông tin cơ bản (Tuyệt đối không được quyền tự đổi lớp học).
+
+---
+    
+## 3. Cấu trúc Đề thi & Import Dữ liệu
+- **Nhập đề bằng File:** Nhập bài thi thông qua file .csv / .xlsx (Không hỗ trợ import hình ảnh). Có giao diện hướng dẫn Giáo viên cách sử dụng. Kiểm tra lỗi dữ liệu trước khi lưu.
+- **Lỗi Parsing dấu phẩy:** Khuyến khích XLSX hoặc bọc CSV trong ngoặc kép `" "` để tránh vỡ cột.
+- **Cơ chế Shuffle (Trộn đề):** Có cờ bật/tắt trộn đáp án lúc tạo bài thi (`shuffleOptions`). Tích hợp tính năng "Pin position" (`isPinned` / `pinnedPosition`) để khóa cứng vị trí đáp án đặc thù (ví dụ: Giữ cố định đáp án D "Cả A, B, C đều đúng" ở vị trí cuối cùng).
+
+---
+
+## 4. Quản lý Thời gian (Server-Authoritative)
+- **Các biến thời gian cốt lõi:**
+  - `openTime` (Thời gian mở đề)
+  - `closeTime` (Thời gian đóng đề)
+  - `duration` (Thời lượng làm bài, tính theo phút hoặc giây)
+- **Cấu hình ranh giới đóng đề (`closeBoundaryMode`):**
+  - `hard_close`: Thu bài đúng thời gian đóng đề (Vào trễ sẽ bị trừ thời gian làm bài).
+  - `soft_close`: Cho phép học sinh làm đủ thời lượng làm bài tính từ lúc bắt đầu, bất chấp thời gian đóng đề.
+- **Chống đóng băng đếm ngược:** Thời gian tính trên Server (`current_time - start_time`). Server từ chối nhận bài nếu đã quá hạn.
+
+---
+
+## 5. Quy trình thi và Anti-Cheat (Chống gian lận)
+- **Bước 1: Ép buộc quyền Camera (Trạng thái chờ):** Phải cấp quyền camera mới bật nút "Bắt đầu thi".
+- **Bước 2: Fullscreen & Tab Lock:** 
+  - Kích hoạt Toàn màn hình, khóa chuột phải.
+  - Cờ override test anti-cheat bằng token trong database (`testOverrideToken`).
+  - Phạt Blur / Thoát F11 / Chuyển tab: cảnh báo tối đa 5 lần. Lần thứ 5 tự động nộp bài.
+- **Bước 3: AI Scan khuôn mặt & Dung sai (Tolerance):**
+  - Quét mặt 3 giây / 1 lần.
+  - Quét lỗi (`consecutive_fails == 3` tức 9s liên tục) -> Ghi nhận 1 vi phạm, lưu log vi phạm.
+- **Bước 4: Chống can thiệp mã (Heartbeat) & Phục hồi khi Offline:**
+  - LocalStorage format: `{ question_id, answer, timestamp }`.
+  - Heartbeat: Client gửi ping "đang quét" đều đặn lên Server.
+  - Mất kết nối (Offline): Bắt event offline/online, gửi gói Re-sync (`offline_start`, `offline_end`, `offline_logs`, mảng đáp án).
+  - Cố tình chặn script: Server mất Heartbeat nhưng client online và không có gói Re-sync hợp lệ -> Đánh cờ "Gian lận kỹ thuật" và khóa bài.
+  - Sync Timeout: Server chỉ ghi nhận đáp án có `timestamp <= close_time_server`.

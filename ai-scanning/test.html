@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Face Scanning Test Workbench</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 30px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: 24px;
+      color: #38bdf8;
+      margin-bottom: 6px;
+    }
+    p {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+    }
+    .camera-card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+    }
+    .video-wrapper {
+      position: relative;
+      width: 320px;
+      height: 240px;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .status-pill {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .status-pill.valid { background: #059669; color: white; }
+    .status-pill.warn { background: #dc2626; color: white; }
+    .status-pill.idle { background: #64748b; color: white; }
+    .counter-box {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    .counter-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: #f59e0b;
+    }
+    .btn {
+      width: 100%;
+      padding: 10px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    .btn:hover { background: #1d4ed8; }
+    .log-card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+    }
+    .log-card h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #e2e8f0;
+    }
+    .log-list {
+      flex: 1;
+      height: 320px;
+      overflow-y: auto;
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #cbd5e1;
+    }
+    .log-item {
+      padding: 4px 0;
+      border-bottom: 1px solid #1e293b;
+    }
+    .log-item.violation { color: #f87171; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AI Face Scanning - Test Workbench</h1>
+      <p>Tool for AI Engineers: Test camera feed, cycle timing (1s), and consecutive tolerance (3 fails = 3s)</p>
+    </header>
+
+    <div class="grid">
+      <div class="camera-card">
+        <div class="video-wrapper">
+          <video id="webcam" autoplay playsinline muted></video>
+        </div>
+
+        <div>
+          <span id="statusBadge" class="status-pill idle">IDLE (Camera stopped)</span>
+        </div>
+
+        <div class="counter-box">
+          <div>Consecutive Fails: <span id="failCounter" class="counter-value">0 / 3</span></div>
+          <small style="color: #64748b;">(Quét 1s / lần. Đạt 3/3 liên tiếp = 3s sẽ kích hoạt vi phạm)</small>
+        </div>
+
+        <button id="toggleBtn" class="btn">Start Camera & AI Scanner</button>
+      </div>
+
+      <div class="log-card">
+        <h2>Live Event & Violation Logs</h2>
+        <div id="logContainer" class="log-list">
+          <div class="log-item">Ready. Click 'Start Camera & AI Scanner' to begin.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { FaceProctor } from './faceDetector.js';
+
+    const video = document.getElementById('webcam');
+    const toggleBtn = document.getElementById('toggleBtn');
+    const statusBadge = document.getElementById('statusBadge');
+    const failCounter = document.getElementById('failCounter');
+    const logContainer = document.getElementById('logContainer');
+
+    let stream = null;
+    let proctor = null;
+
+    function addLog(text, isViolation = false) {
+      const item = document.createElement('div');
+      item.className = 'log-item' + (isViolation ? ' violation' : '');
+      const time = new Date().toLocaleTimeString();
+      item.textContent = `[${time}] ${text}`;
+      logContainer.prepend(item);
+    }
+
+    toggleBtn.addEventListener('click', async () => {
+      if (proctor && proctor.isRunning) {
+        proctor.stop();
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        statusBadge.className = 'status-pill idle';
+        statusBadge.textContent = 'STOPPED';
+        toggleBtn.textContent = 'Start Camera & AI Scanner';
+        addLog('Stopped scanner.');
+        return;
+      }
+
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
+        video.srcObject = stream;
+
+        proctor = new FaceProctor({
+          scanIntervalMs: 1000, // 1s per scan
+          toleranceLimit: 3,    // 3 consecutive fails = 3s
+          onStatusChange: (info) => {
+            failCounter.textContent = `${info.consecutiveFails} / 3`;
+            if (info.status === 'VALID') {
+              statusBadge.className = 'status-pill valid';
+              statusBadge.textContent = 'VALID: 1 Face Detected';
+            } else {
+              statusBadge.className = 'status-pill warn';
+              statusBadge.textContent = `WARNING: ${info.message}`;
+            }
+          },
+          onViolation: (violation) => {
+            addLog(`🚨 VIOLATION RECORDED: ${violation.type} - ${violation.details}`, true);
+          },
+          onFrameScanned: (res) => {
+            addLog(`Scan: valid=${res.valid}, count=${res.count || 0}`);
+          }
+        });
+
+        proctor.start(video);
+        toggleBtn.textContent = 'Stop Camera & AI Scanner';
+        addLog('Webcam connected. AI Scanner started (1s cycle).');
+      } catch (err) {
+        addLog(`Camera error: ${err.message}`, true);
+      }
+    });
+  </script>
+</body>
+</html>
